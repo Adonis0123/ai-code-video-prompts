@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "NotoSC";
+        src: url("./assets/fonts/NotoSansSC-subset.ttf") format("truetype");
+        font-weight: 100 900;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #ffffff; }
+      body { font-family: "NotoSC", sans-serif; color: #1f2329; }
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background-color: #ffffff;
+        background-image: radial-gradient(circle, #d6efea 1.8px, transparent 2px);
+        background-size: 40px 40px;
+      }
+      .clip { position: absolute; inset: 0; }
+      .abs { position: absolute; }
+      .teal { color: #0b8f80; }
+
+      /* ---------- intro ---------- */
+      #introWrap { position: absolute; inset: 0; overflow: hidden; }
+      #introVid { width: 100%; height: 100%; object-fit: cover; }
+      #veil { position: absolute; inset: 0; background: #ffffff; opacity: 0; }
+      #titleCard {
+        position: absolute; left: 170px; top: 250px; width: 1340px; height: 520px;
+        background: #ffffff; border: 3px solid #1f2329; border-radius: 36px;
+        box-shadow: 14px 16px 0 #c9f1ea; opacity: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+      }
+      #t1 { font-size: 128px; font-weight: 900; line-height: 1.1; position: relative; }
+      #t1u { position: absolute; left: -10px; bottom: -14px; width: calc(100% + 20px); height: 40px; overflow: visible; }
+      #t2 { font-size: 60px; font-weight: 700; line-height: 1.25; }
+      #t3 {
+        margin-top: 12px; font-size: 36px; font-weight: 500; color: #4a5260;
+        padding: 10px 30px; border-radius: 999px; background: #e9faf7;
+      }
+
+      /* ---------- screenshot frame ---------- */
+      #frameWrap { position: absolute; left: 150px; top: 40px; width: 1376px; height: 864px; opacity: 0; }
+      #vp {
+        position: absolute; inset: 0; overflow: hidden; border-radius: 22px; background: #ffffff;
+        border: 3px solid #1f2329; box-shadow: 12px 14px 0 #c9f1ea;
+      }
+      #cam { position: absolute; left: 0; top: 0; width: 2048px; height: 1285px; }
+      #cam img { position: absolute; left: 0; top: 0; width: 2048px; height: 1285px; }
+      #img02, #img03 { opacity: 0; }
+      #ann { position: absolute; left: 0; top: 0; overflow: visible; }
+      .stroke { fill: none; stroke: #13bfa9; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+      .ripple { fill: none; stroke: #13bfa9; stroke-width: 5; opacity: 0; }
+      .lbl { font-family: "NotoSC", sans-serif; font-weight: 900; fill: #0b8f80; }
+      #peekBox { position: absolute; left: 960px; bottom: 0; width: 300px; height: 192px; overflow: hidden; }
+      #peek { position: absolute; left: 0; top: 0; width: 300px; height: 192px; }
+      #repoCard {
+        position: absolute; left: 520px; top: 130px; width: 820px; height: 330px; opacity: 0;
+        background: #ffffff; border: 3px solid #1f2329; border-radius: 26px; box-shadow: 10px 12px 0 #c9f1ea;
+        padding: 34px 40px;
+      }
+      #repoUrl { font-size: 28px; color: #5b6472; font-weight: 500; }
+      #repoFile { margin-top: 10px; font-size: 44px; font-weight: 900; }
+      .bar { height: 18px; border-radius: 9px; background: #edf0f3; margin-top: 18px; }
+      #copyBtn {
+        position: absolute; right: 36px; bottom: 30px; width: 170px; height: 64px; border-radius: 16px;
+        background: #0b8f80; color: #ffffff; font-size: 32px; font-weight: 900;
+      }
+      #copyBtn span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+      #copyB { opacity: 0; }
+      #note {
+        position: absolute; left: 640px; top: 640px; width: 620px; height: 118px; opacity: 0;
+        background: #fff8d9; border: 3px solid #1f2329; border-radius: 18px; box-shadow: 8px 10px 0 #f3dc8a;
+        display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700;
+      }
+
+      /* ---------- chat (drawn, not a screenshot) ---------- */
+      .win {
+        position: absolute; left: 150px; top: 40px; width: 1376px; height: 864px; overflow: hidden;
+        background: #ffffff; border: 3px solid #1f2329; border-radius: 22px; box-shadow: 12px 14px 0 #c9f1ea;
+      }
+      .winbar {
+        position: absolute; left: 0; top: 0; right: 0; height: 64px; border-bottom: 2px solid #e6e9ee;
+        display: flex; align-items: center; gap: 14px; padding: 0 26px 0 250px; font-size: 28px; font-weight: 700;
+      }
+      .ico { width: 38px; height: 38px; border-radius: 10px; flex: none; background: url("./assets/wb/workbuddy-icon.png") center / cover no-repeat; }
+      .muted { color: #6b7380; font-weight: 500; }
+      .demo { margin-left: auto; padding: 4px 16px; border-radius: 10px; background: #fff4d6; color: #a86a00; font-size: 24px; font-weight: 700; }
+      #chatInner { opacity: 0; }
+      #ubub {
+        position: absolute; right: 44px; top: 100px; width: 860px; padding: 22px 30px; border-radius: 22px;
+        background: #f1f3f6; font-size: 30px; line-height: 1.5; font-weight: 500;
+      }
+      .arow { position: absolute; left: 44px; width: 1240px; display: flex; gap: 22px; opacity: 0; }
+      .av { width: 60px; height: 60px; border-radius: 16px; flex: none; background: url("./assets/wb/workbuddy-icon.png") center / cover no-repeat; }
+      .abody { flex: 1; }
+      .aline { position: relative; height: 60px; display: flex; align-items: center; gap: 16px; font-size: 36px; font-weight: 700; }
+      .stat { position: relative; width: 40px; height: 40px; flex: none; }
+      .stat svg { position: absolute; left: 0; top: 0; }
+      .swap { position: relative; height: 60px; flex: 1; }
+      .swap span { position: absolute; left: 0; top: 0; line-height: 60px; white-space: nowrap; }
+      .code {
+        margin-top: 8px; display: inline-block; padding: 10px 22px; border-radius: 12px;
+        background: #1f2329; color: #e9faf7; font-family: monospace; font-size: 28px;
+      }
+      #r1 { top: 290px; } #r2 { top: 450px; } #r3 { top: 540px; } #r4 { top: 670px; }
+      #pbar { position: relative; margin-top: 12px; width: 760px; height: 22px; border-radius: 11px; background: #e9eef2; overflow: hidden; }
+      #pfill { position: absolute; left: 0; top: 0; width: 760px; height: 22px; background: #13bfa9; }
+      #pct { width: 110px; }
+      .chip {
+        display: inline-flex; align-items: center; gap: 12px; margin-left: 10px; padding: 8px 22px;
+        border-radius: 14px; border: 3px solid #13bfa9; background: #e9faf7; font-size: 32px; font-weight: 700;
+      }
+
+      /* ---------- player ---------- */
+      .dots { display: flex; gap: 10px; margin-right: 12px; }
+      .dots i { width: 16px; height: 16px; border-radius: 8px; background: #e2e5ea; display: block; }
+      #plWinInner { opacity: 0; }
+      #plVidBg { position: absolute; left: 29px; top: 61px; width: 1312px; height: 738px; border-radius: 10px; background: #1f2329; }
+      #plCtl { position: absolute; left: 29px; top: 812px; width: 1312px; height: 32px; display: flex; align-items: center; gap: 22px; }
+      #plTrack { position: relative; flex: 1; height: 10px; border-radius: 5px; background: #e6e9ee; overflow: hidden; }
+      #plFill { position: absolute; left: 0; top: 0; width: 100%; height: 10px; background: #13bfa9; }
+      #vidWrap { position: absolute; left: 182px; top: 104px; width: 1312px; height: 738px; border-radius: 10px; overflow: hidden; opacity: 0; }
+      #mainVid { width: 100%; height: 100%; object-fit: cover; }
+
+      /* ---------- end ---------- */
+      #endInner { position: absolute; inset: 0; }
+      #e1 { position: absolute; left: 150px; top: 290px; width: 1120px; font-size: 132px; font-weight: 900; line-height: 1.2; opacity: 0; }
+      #e2 {
+        position: absolute; left: 150px; top: 510px; width: 1120px; height: 104px; opacity: 0;
+        border: 3px solid #1f2329; border-radius: 52px; background: #e9faf7; box-shadow: 10px 12px 0 #c9f1ea;
+        display: flex; align-items: center; justify-content: center; font-size: 46px; font-weight: 700;
+      }
+      #e3 { position: absolute; left: 150px; top: 670px; width: 1120px; font-size: 40px; font-weight: 500; color: #4a5260; opacity: 0; }
+      #endSpriteBox { position: absolute; left: 1250px; top: 230px; width: 600px; height: 600px; opacity: 0; }
+      #endSprite {
+        position: absolute; left: 0; top: 0; width: 600px; height: 600px;
+        background: url("./assets/wb/mascot-success-sprite.png") no-repeat; background-size: 600px 10800px;
+      }
+
+      /* ---------- shared overlays ---------- */
+      #tag {
+        position: absolute; left: 108px; top: 12px; width: 230px; height: 72px; opacity: 0;
+        background: #0b8f80; border: 3px solid #1f2329; border-radius: 18px; box-shadow: 6px 7px 0 #1f2329;
+      }
+      #tag span {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        color: #ffffff; font-size: 40px; font-weight: 900; opacity: 0;
+      }
+      .cap {
+        position: absolute; left: 150px; top: 924px; width: 1376px; height: 130px; opacity: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 58px; font-weight: 900; line-height: 1.2; white-space: nowrap;
+      }
+      #host { position: absolute; left: 1560px; top: 700px; width: 340px; height: 330px; }
+      #hostShadow { position: absolute; left: 50px; top: 300px; width: 240px; height: 30px; border-radius: 50%; background: rgba(31, 35, 41, 0.12); }
+      #hostBob, #hostSway, #hostBreath { position: absolute; inset: 0; }
+      #hostImg { position: absolute; left: 0; top: 0; width: 340px; height: 327px; }
+      #hostSprite {
+        position: absolute; left: -50px; top: -110px; width: 440px; height: 440px; opacity: 0;
+        background: url("./assets/wb/mascot-success-sprite.png") no-repeat; background-size: 440px 7920px;
+      }
+      #bubble {
+        position: absolute; left: 1556px; top: 560px; width: 340px; height: 110px; opacity: 0;
+        background: #ffffff; border: 3px solid #1f2329; border-radius: 28px; box-shadow: 6px 7px 0 #c9f1ea;
+      }
+      #bubbleTail { position: absolute; left: 150px; top: 98px; width: 40px; height: 34px; overflow: visible; }
+      #bubble .bt {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        font-size: 40px; font-weight: 900; opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="45" data-width="1920" data-height="1080">
+      <!-- intro: the replica film flashes behind the title (non-timed wrapper, timed video) -->
+      <div id="introWrap">
+        <video id="introVid" src="./assets/editor-replica.mp4" muted playsinline data-start="0" data-duration="4.6" data-media-start="6" data-track-index="0"></video>
+      </div>
+
+      <section id="s1" class="clip" data-start="0" data-duration="4.6" data-track-index="1">
+        <div id="veil"></div>
+        <div id="titleCard">
+          <div id="t1">一段提示词
+            <svg id="t1u" viewBox="0 0 700 40" preserveAspectRatio="none"><path id="t1path" class="stroke" d="M8 26 C 160 10, 360 34, 692 14" style="stroke-width: 12"></path></svg>
+          </div>
+          <div id="t2">让 <span class="teal">WorkBuddy</span> 1:1 复刻这条爆款剪辑视频</div>
+          <div id="t3">跟着做 5 步，不用写代码</div>
+        </div>
+      </section>
+
+      <!-- steps 1-4: real WorkBuddy screenshots (private areas masked by scripts/mask-shots.py) -->
+      <section id="screen" class="clip" data-start="4.4" data-duration="23.8" data-track-index="2">
+        <div id="frameWrap">
+          <div id="vp">
+            <div id="cam" data-layout-allow-overflow>
+              <img id="img01" src="./assets/wb-01-new-task.jpg" alt="" />
+              <img id="img02" src="./assets/wb-02-workspace-menu.jpg" alt="" />
+              <img id="img03" src="./assets/wb-03-prompt-typed.jpg" alt="" />
+              <svg id="ann" width="2048" height="1285" viewBox="0 0 2048 1285">
+                <g id="typing" opacity="0">
+                  <rect id="m1" x="688" y="494" width="186" height="46" fill="#ffffff"></rect>
+                  <rect id="m2" x="874" y="494" width="14" height="46" fill="#ffffff"></rect>
+                  <rect id="caret" x="694" y="503" width="3" height="29" fill="#1f2329"></rect>
+                </g>
+                <path id="c1" class="stroke"></path>
+                <path id="a1b" class="stroke"></path>
+                <path id="a1h" class="stroke"></path>
+                <text id="l1" class="lbl" x="560" y="372" font-size="34" opacity="0">点这里</text>
+                <circle id="rp1" class="ripple" cx="110" cy="186" r="10"></circle>
+                <path id="c2" class="stroke"></path>
+                <circle id="rp2" class="ripple" cx="770" cy="701" r="10"></circle>
+                <text id="n3" class="lbl" x="845" y="410" font-size="28" text-anchor="middle" opacity="0" style="fill: #6b7380; font-weight: 700">（这里是你已有的文件夹）</text>
+                <path id="c3" class="stroke"></path>
+                <circle id="rp3" class="ripple" cx="770" cy="592" r="10"></circle>
+                <path id="c4" class="stroke"></path>
+                <path id="a4b" class="stroke"></path>
+                <path id="a4h" class="stroke"></path>
+                <text id="l4" class="lbl" x="1500" y="836" font-size="30" text-anchor="middle" opacity="0">发送</text>
+                <circle id="rp4" class="ripple" cx="1715" cy="635" r="10"></circle>
+              </svg>
+            </div>
+            <div id="peekBox"><img id="peek" data-layout-allow-overflow src="./assets/wb/mascot-peek.png" alt="" /></div>
+          </div>
+          <div id="repoCard">
+            <div id="repoUrl">github.com/adonis0123/ai-code-video-prompts</div>
+            <div id="repoFile">prompts/editor-replica.md</div>
+            <div class="bar" style="width: 70%"></div>
+            <div class="bar" style="width: 62%"></div>
+            <div class="bar" style="width: 48%"></div>
+            <div id="copyBtn"><span id="copyA">复制</span><span id="copyB">已复制</span></div>
+          </div>
+          <div id="note">【】里的内容都能改</div>
+        </div>
+      </section>
+
+      <!-- step 4 progress: drawn in code, not a screenshot -->
+      <section id="chat" class="clip" data-start="28" data-duration="5.8" data-track-index="3">
+        <div id="chatInner" class="win">
+          <div class="winbar"><div class="ico"></div>WorkBuddy<span class="muted">新任务</span><span class="demo">演示画面</span></div>
+          <div id="ubub">先安装 hyperframes 技能，然后帮我 1:1 复刻这条剪辑视频……</div>
+          <div id="r1" class="arow">
+            <div class="av"></div>
+            <div class="abody">
+              <div class="aline">
+                <div class="stat">
+                  <svg id="spin" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="none" stroke="#d6efea" stroke-width="6"></circle><path d="M20 5 A15 15 0 0 1 35 20" fill="none" stroke="#13bfa9" stroke-width="6" stroke-linecap="round"></path></svg>
+                  <svg id="ok1" width="40" height="40" viewBox="0 0 40 40" opacity="0"><circle cx="20" cy="20" r="18" fill="#13bfa9"></circle><path d="M11 20 L18 27 L30 13" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+                <div class="swap"><span id="r1a">正在安装 hyperframes 技能…</span><span id="r1b" style="opacity: 0">已安装 hyperframes 技能</span></div>
+              </div>
+              <div class="code">npx skills add heygen-com/hyperframes</div>
+            </div>
+          </div>
+          <div id="r2" class="arow">
+            <div class="av"></div>
+            <div class="abody"><div class="aline">
+              <div class="stat"><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#13bfa9"></circle><path d="M11 20 L18 27 L30 13" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+              <span>写好动画代码 index.html</span>
+            </div></div>
+          </div>
+          <div id="r3" class="arow">
+            <div class="av"></div>
+            <div class="abody">
+              <div class="aline"><span>渲染中</span><span id="pct">0%</span></div>
+              <div id="pbar"><div id="pfill"></div></div>
+            </div>
+          </div>
+          <div id="r4" class="arow">
+            <div class="av"></div>
+            <div class="abody"><div class="aline">
+              <div class="stat"><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#13bfa9"></circle><path d="M11 20 L18 27 L30 13" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+              <span>已完成</span>
+              <span class="chip"><svg width="24" height="26" viewBox="0 0 24 26"><path d="M3 2 L22 13 L3 24 Z" fill="#0b8f80"></path></svg>editor-replica.mp4</span>
+            </div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- step 5: player chrome; the video sits in a non-timed wrapper above it -->
+      <section id="player" class="clip" data-start="33.6" data-duration="7.2" data-track-index="4">
+        <div id="plWinInner" class="win">
+          <div class="winbar"><div class="dots"><i></i><i></i><i></i></div>editor-replica.mp4</div>
+          <div id="plVidBg"></div>
+          <div id="plCtl">
+            <svg width="28" height="30" viewBox="0 0 28 30"><path d="M4 2 L26 15 L4 28 Z" fill="#1f2329"></path></svg>
+            <div id="plTrack"><div id="plFill"></div></div>
+          </div>
+        </div>
+      </section>
+      <div id="vidWrap">
+        <video id="mainVid" src="./assets/editor-replica.mp4" muted playsinline data-start="34" data-duration="6.6" data-media-start="4" data-track-index="5"></video>
+      </div>
+
+      <section id="end" class="clip" data-start="40.4" data-duration="4.6" data-track-index="6">
+        <div id="endInner">
+          <div id="e1">提示词已开源</div>
+          <div id="e2">github.com/adonis0123/ai-code-video-prompts</div>
+          <div id="e3">复制提示词，把【】里的名字和台词换成你的</div>
+          <div id="endSpriteBox"><div id="endSprite"></div></div>
+        </div>
+      </section>
+
+      <!-- shared overlays (non-timed; opacity driven by the root timeline) -->
+      <div id="tag" data-layout-allow-overlap><span id="tg1">第 1 步</span><span id="tg2">第 2 步</span><span id="tg3">第 3 步</span><span id="tg4">第 4 步</span><span id="tg5">第 5 步</span></div>
+
+      <div id="cap1" class="cap">先打开<span class="teal">&nbsp;WorkBuddy</span></div>
+      <div id="cap2" class="cap">点左上角的「<span class="teal">新建任务</span>」</div>
+      <div id="cap3" class="cap">点输入框下方的「<span class="teal">选择工作空间</span>」</div>
+      <div id="cap4" class="cap">选「<span class="teal">新建工作空间</span>」，建一个空文件夹</div>
+      <div id="cap5" class="cap">到开源仓库，复制提示词</div>
+      <div id="cap6" class="cap">粘进输入框，长文会自动折叠</div>
+      <div id="cap7" class="cap">复制前先把【】里的名字和台词换成你的</div>
+      <div id="cap8" class="cap">点右下角的<span class="teal">发送</span>按钮</div>
+      <div id="cap9" class="cap">剩下交给它：装工具、写代码、渲染</div>
+      <div id="cap10" class="cap">看到「<span class="teal">已完成</span>」就好了</div>
+      <div id="cap11" class="cap">打开生成的&nbsp;<span class="teal">editor-replica.mp4</span></div>
+      <div id="cap12" class="cap">这就是这段提示词做出的成片</div>
+
+      <div id="host">
+        <div id="hostShadow"></div>
+        <div id="hostBob"><div id="hostSway"><div id="hostBreath">
+          <img id="hostImg" src="./assets/wb/mascot-laptop.png" alt="" />
+          <div id="hostSprite"></div>
+        </div></div></div>
+      </div>
+      <div id="bubble">
+        <svg id="bubbleTail" viewBox="0 0 40 34"><path d="M2 0 L20 32 L38 0" fill="#ffffff" stroke="#1f2329" stroke-width="3" stroke-linejoin="round"></path></svg>
+        <span id="b1" class="bt">跟我做！</span>
+        <span id="b2" class="bt">就是它！</span>
+        <span id="b3" class="bt">改成你的！</span>
+        <span id="b4" class="bt">我在忙…</span>
+        <span id="b5" class="bt">成片到手！</span>
+      </div>
+    </div>
+
+    <script>
+      const FX = 150, FY = 40, FW = 1376, FH = 864, IW = 2048, IH = 1285, S0 = FW / IW;
+      const $ = (id) => document.getElementById(id);
+
+      // camera: scale the screenshot layer around an image point, never showing past its edges
+      function camTo(px, py, s) {
+        const minX = FW - IW * s, minY = FH - IH * s;
+        const fit = (v, lo) => (lo > 0 ? lo / 2 : Math.min(0, Math.max(lo, v)));
+        return { x: fit(FW / 2 - px * s, minX), y: fit(FH / 2 - py * s, minY), scale: s };
+      }
+
+      // deterministic hand-drawn strokes
+      const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+      const noise = (x) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return (hash(i) + (hash(i + 1) - hash(i)) * u) * 2 - 1; };
+      function sketchEllipse(cx, cy, rx, ry, seed) {
+        let d = "";
+        const N = 72, a0 = -2.5;
+        for (let i = 0; i <= N; i++) {
+          const u = i / N, a = a0 + u * (Math.PI * 2 + 0.55), k = 1 + 0.05 * noise(u * 6 + seed) + 0.07 * u;
+          d += (i ? " L" : "M") + (cx + Math.cos(a) * rx * k).toFixed(1) + " " + (cy + Math.sin(a) * ry * k).toFixed(1);
+        }
+        return d;
+      }
+      function arrow(x1, y1, x2, y2, bend) {
+        const dx = x2 - x1, dy = y2 - y1, cx = (x1 + x2) / 2 - dy * bend, cy = (y1 + y2) / 2 + dx * bend;
+        const ang = Math.atan2(y2 - cy, x2 - cx), L = 30;
+        const h1 = [x2 - Math.cos(ang - 0.55) * L, y2 - Math.sin(ang - 0.55) * L];
+        const h2 = [x2 - Math.cos(ang + 0.55) * L, y2 - Math.sin(ang + 0.55) * L];
+        return { body: `M${x1} ${y1} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2} ${y2}`, head: `M${h1[0].toFixed(1)} ${h1[1].toFixed(1)} L${x2} ${y2} L${h2[0].toFixed(1)} ${h2[1].toFixed(1)}` };
+      }
+      $("c1").setAttribute("d", sketchEllipse(188, 186, 200, 42, 1));
+      $("c2").setAttribute("d", sketchEllipse(772, 701, 116, 38, 2));
+      $("c3").setAttribute("d", sketchEllipse(786, 592, 124, 32, 3));
+      $("c4").setAttribute("d", sketchEllipse(1715, 635, 56, 52, 4));
+      const A1 = arrow(560, 335, 400, 220, 0.25); $("a1b").setAttribute("d", A1.body); $("a1h").setAttribute("d", A1.head);
+      const A4 = arrow(1520, 794, 1672, 680, -0.25); $("a4b").setAttribute("d", A4.body); $("a4h").setAttribute("d", A4.head);
+      const LEN = {};
+      ["c1", "a1b", "a1h", "c2", "c3", "c4", "a4b", "a4h", "t1path"].forEach((id) => {
+        const p = $(id), l = Math.ceil(p.getTotalLength()) + 2;
+        LEN[id] = l; p.style.strokeDasharray = l; p.style.strokeDashoffset = l;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      const draw = (id, t, d = 0.5) => tl.fromTo("#" + id, { strokeDashoffset: LEN[id] }, { strokeDashoffset: 0, duration: d, ease: "power2.inOut" }, t);
+      const fadeOut = (sel, t, d = 0.25) => tl.to(sel, { opacity: 0, duration: d, ease: "power1.in" }, t);
+      const ripple = (id, t) => tl.fromTo("#" + id, { attr: { r: 10 }, opacity: 1 }, { attr: { r: 70 }, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, t);
+      function cap(id, t0, t1) {
+        tl.fromTo("#" + id, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, t0);
+        tl.to("#" + id, { opacity: 0, duration: 0.2, ease: "power1.in" }, t1 - 0.2);
+      }
+      function say(id, t0, t1) {
+        tl.set("#bubble", { scale: 0.7, transformOrigin: "50% 100%" }, t0);
+        tl.to("#bubble", { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, t0);
+        tl.fromTo("#" + id, { opacity: 0 }, { opacity: 1, duration: 0.01 }, t0);
+        tl.to("#bubble", { opacity: 0, duration: 0.2 }, t1 - 0.2);
+        tl.to("#" + id, { opacity: 0, duration: 0.01 }, t1);
+      }
+      function bounce(t, h = 30) {
+        tl.to("#hostBob", { y: -h, duration: 0.2, ease: "power2.out" }, t);
+        tl.to("#hostBob", { y: 0, duration: 0.45, ease: "bounce.out" }, t + 0.2);
+      }
+      function wave(t, n = 2) {
+        const k = []; for (let i = 0; i < n; i++) k.push({ rotation: -7 }, { rotation: 7 }); k.push({ rotation: 0 });
+        tl.to("#hostSway", { keyframes: k, duration: 0.32 * (2 * n + 1), ease: "sine.inOut", transformOrigin: "50% 92%" }, t);
+      }
+      function step(n, t) {
+        if (n > 1) tl.to("#tg" + (n - 1), { opacity: 0, duration: 0.15 }, t);
+        tl.fromTo("#tg" + n, { opacity: 0 }, { opacity: 1, duration: 0.15 }, t);
+        tl.set("#tag", { scale: 0.75, rotation: -8 }, t);
+        tl.to("#tag", { scale: 1, rotation: -3, duration: 0.45, ease: "back.out(2.5)" }, t);
+      }
+
+      // ---------- host: WorkBuddy mascot ----------
+      tl.fromTo("#host", { y: 420 }, { y: 0, duration: 0.6, ease: "back.out(1.6)" }, 1.4);
+      tl.to("#hostBreath", { scaleY: 1.025, scaleX: 0.99, transformOrigin: "50% 100%", duration: 1.1, ease: "sine.inOut", yoyo: true, repeat: 39 }, 0);
+      wave(2.1, 2); say("b1", 2.2, 4.2);
+
+      // ---------- 0-4.6 intro ----------
+      tl.fromTo("#introWrap", { scale: 1.14 }, { scale: 1.0, duration: 4.6, ease: "none" }, 0);
+      tl.fromTo("#veil", { opacity: 0 }, { opacity: 0.86, duration: 0.6, ease: "power1.inOut" }, 0.9);
+      tl.fromTo("#titleCard", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.55, ease: "back.out(1.5)" }, 1.1);
+      draw("t1path", 1.7, 0.6);
+      tl.to("#titleCard", { opacity: 0, y: -40, duration: 0.35, ease: "power2.in" }, 4.2);
+
+      // ---------- 4.4-28.2 screenshots ----------
+      const cam = $("cam");
+      tl.set(cam, Object.assign({ transformOrigin: "0 0" }, camTo(1024, 642, S0)), 0);
+      tl.fromTo("#frameWrap", { opacity: 0, y: 70 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 4.4);
+      tl.fromTo("#tag", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 4.9);
+
+      // step 1: 新建任务
+      step(1, 4.9);
+      cap("cap1", 5.0, 7.5);
+      tl.to(cam, Object.assign({ duration: 1.0, ease: "power2.inOut" }, camTo(190, 187, 1.6)), 6.1);
+      draw("c1", 7.2, 0.55);
+      draw("a1b", 7.6, 0.35); draw("a1h", 7.9, 0.15);
+      tl.fromTo("#l1", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 7.85);
+      cap("cap2", 7.5, 10.8);
+      ripple("rp1", 8.3);
+      bounce(8.4); say("b2", 8.5, 10.5);
+      fadeOut(["#c1", "#a1b", "#a1h", "#l1"], 10.7);
+
+      // step 2: 选择工作空间 -> 新建工作空间
+      step(2, 11.0);
+      tl.to(cam, Object.assign({ duration: 1.0, ease: "power2.inOut" }, camTo(800, 560, 1.35)), 10.9);
+      cap("cap3", 11.3, 14.1);
+      draw("c2", 12.2, 0.55);
+      ripple("rp2", 12.95);
+      tl.to("#img02", { opacity: 1, duration: 0.25, ease: "power1.out" }, 13.2);
+      fadeOut("#c2", 13.2, 0.2);
+      tl.fromTo("#n3", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 13.6);
+      cap("cap4", 14.1, 18.4);
+      tl.to(cam, Object.assign({ duration: 1.2, ease: "power2.inOut" }, camTo(800, 520, 1.45)), 14.1);
+      draw("c3", 14.5, 0.55);
+      ripple("rp3", 15.3);
+      tl.fromTo("#peek", { y: 192 }, { y: 6, duration: 0.45, ease: "back.out(1.8)" }, 15.6);
+      tl.to("#peek", { keyframes: [{ rotation: -6 }, { rotation: 6 }, { rotation: -4 }, { rotation: 0 }], duration: 1.2, ease: "sine.inOut", transformOrigin: "50% 100%" }, 16.1);
+      tl.to("#peek", { y: 192, duration: 0.35, ease: "power2.in" }, 17.9);
+      fadeOut(["#c3", "#n3"], 18.4, 0.2);
+
+      // step 3: copy prompt, paste, typing
+      step(3, 18.6);
+      tl.to("#typing", { opacity: 1, duration: 0.01 }, 18.55);
+      tl.to("#img03", { opacity: 1, duration: 0.3, ease: "power1.out" }, 18.55);
+      tl.to(cam, Object.assign({ duration: 0.9, ease: "power2.inOut" }, camTo(1213, 560, 1.24)), 18.6);
+      tl.fromTo("#repoCard", { opacity: 0, y: 40, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, 18.9);
+      cap("cap5", 18.9, 21.0);
+      tl.to("#copyBtn", { keyframes: [{ scale: 0.88 }, { scale: 1 }], duration: 0.25, ease: "power1.inOut" }, 19.9);
+      tl.to("#copyA", { opacity: 0, duration: 0.01 }, 20.0);
+      tl.to("#copyB", { opacity: 1, duration: 0.01 }, 20.0);
+      tl.to("#repoCard", { opacity: 0, y: 160, scale: 0.6, duration: 0.4, ease: "power2.in" }, 20.55);
+      cap("cap6", 21.0, 23.0);
+      // paste: WorkBuddy folds long pasted text into one chip; the mask over the real chip lifts at once
+      tl.to("#caret", { keyframes: [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }], duration: 1.2, ease: "steps(1)" }, 21.0);
+      tl.to("#m1", { opacity: 0, duration: 0.15, ease: "power1.out" }, 22.3);
+      tl.set("#caret", { attr: { x: 879 } }, 22.3);
+      tl.to("#caret", { keyframes: [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: 0 }], duration: 3.0, ease: "steps(1)" }, 22.6);
+      cap("cap7", 23.0, 26.2);
+      tl.fromTo("#note", { opacity: 0, y: 30, rotation: 0 }, { opacity: 1, y: 0, rotation: -2, duration: 0.4, ease: "back.out(2)" }, 23.6);
+      bounce(23.7); say("b3", 23.8, 25.8);
+      fadeOut("#note", 25.75, 0.2);
+
+      // step 4: press send
+      step(4, 26.0);
+      tl.to(cam, Object.assign({ duration: 0.8, ease: "power2.inOut" }, camTo(1715, 635, 1.6)), 25.9);
+      cap("cap8", 26.2, 28.4);
+      draw("c4", 26.8, 0.5);
+      draw("a4b", 27.0, 0.3); draw("a4h", 27.3, 0.12);
+      tl.fromTo("#l4", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 27.2);
+      ripple("rp4", 27.55);
+      tl.to("#frameWrap", { opacity: 0, scale: 0.96, duration: 0.3, ease: "power2.in" }, 27.85);
+
+      // ---------- 28-33.8 progress (drawn chat) ----------
+      tl.fromTo("#chatInner", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power2.out" }, 28.0);
+      cap("cap9", 28.4, 31.6);
+      tl.fromTo("#r1", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 28.6);
+      tl.fromTo("#spin", { rotation: 0 }, { rotation: 720, duration: 1.3, ease: "none", transformOrigin: "50% 50%" }, 28.6);
+      tl.to("#spin", { opacity: 0, duration: 0.1 }, 29.9);
+      tl.to("#ok1", { opacity: 1, duration: 0.1 }, 29.9);
+      tl.to("#r1a", { opacity: 0, duration: 0.15 }, 29.9);
+      tl.to("#r1b", { opacity: 1, duration: 0.15 }, 29.9);
+      tl.fromTo("#r2", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 30.1);
+      tl.fromTo("#r3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 30.5);
+      const prog = { v: 0 }, pct = $("pct");
+      tl.fromTo(prog, { v: 0 }, { v: 100, duration: 1.8, ease: "power1.inOut", onUpdate: () => { pct.textContent = Math.round(prog.v) + "%"; } }, 30.6);
+      tl.fromTo("#pfill", { scaleX: 0 }, { scaleX: 1, duration: 1.8, ease: "power1.inOut", transformOrigin: "0 50%" }, 30.6);
+      tl.fromTo("#r4", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(2)" }, 32.55);
+      cap("cap10", 31.6, 33.6);
+      say("b4", 28.7, 31.4);
+      // mascot celebrates with the success sprite (18 frames, stepped by the timeline)
+      tl.to("#hostImg", { opacity: 0, duration: 0.12 }, 32.6);
+      tl.to("#hostSprite", { opacity: 1, duration: 0.12 }, 32.6);
+      tl.fromTo("#hostSprite", { backgroundPosition: "0px 0px" }, { backgroundPosition: "0px -7480px", duration: 1.2, ease: "steps(17)" }, 32.6);
+      bounce(32.7, 26);
+      tl.to("#hostSprite", { opacity: 0, duration: 0.15 }, 34.9);
+      tl.to("#hostImg", { opacity: 1, duration: 0.15 }, 34.9);
+      tl.to("#chatInner", { opacity: 0, duration: 0.25 }, 33.55);
+
+      // ---------- 33.6-40.8 open the mp4 ----------
+      step(5, 33.6);
+      tl.fromTo("#plWinInner", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 33.6);
+      tl.fromTo("#vidWrap", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 34.0);
+      tl.fromTo("#plFill", { scaleX: 0 }, { scaleX: 1, duration: 6.6, ease: "none", transformOrigin: "0 50%" }, 34.0);
+      cap("cap11", 33.8, 36.4);
+      cap("cap12", 36.4, 40.4);
+      bounce(36.5); say("b5", 36.6, 39.2);
+      tl.to(["#vidWrap", "#plWinInner"], { opacity: 0, duration: 0.25 }, 40.4);
+      tl.to("#tag", { opacity: 0, duration: 0.2 }, 40.4);
+
+      // ---------- 40.6-45 end card ----------
+      tl.to("#host", { y: 420, duration: 0.4, ease: "power2.in" }, 40.3);
+      tl.fromTo("#e1", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.6)" }, 40.5);
+      tl.fromTo("#e2", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 40.85);
+      tl.fromTo("#e3", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 41.3);
+      tl.fromTo("#endSpriteBox", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.8)" }, 40.55);
+      tl.fromTo("#endSprite", { backgroundPosition: "0px 0px" }, { backgroundPosition: "0px -10200px", duration: 1.2, ease: "steps(17)", repeat: 2 }, 40.8);
+      tl.to("#endSpriteBox", { keyframes: [{ rotation: -6 }, { rotation: 6 }, { rotation: -6 }, { rotation: 6 }, { rotation: 0 }], duration: 1.8, ease: "sine.inOut", transformOrigin: "50% 90%" }, 41.1);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

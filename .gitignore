@@ -1,0 +1,9 @@
+.hyperframes/
+replica/renders/*
+!replica/renders/editor-replica.mp4
+!replica/renders/contact-sheet.jpg
+.DS_Store
+.env
+.env.*
+workbuddy-tutorial/assets/wb/
+node_modules/

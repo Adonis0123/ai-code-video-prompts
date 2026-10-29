@@ -1,0 +1,6 @@
+renders/*
+node_modules/
+.hyperframes/
+snapshots/
+shots/
+assets/editor-replica.mp4
